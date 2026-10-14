@@ -1,0 +1,21 @@
+[Unit]
+Description=Visitor Insights dashboard (self-hosted WordPress analytics)
+Documentation=file:/opt/wp-visitor-insights/README.md
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+ExecStart=/opt/wp-visitor-insights/bin/serve.sh
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/dev/null
+
+[Install]
+WantedBy=multi-user.target

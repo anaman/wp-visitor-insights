@@ -1,0 +1,10 @@
+# wp-visitor-insights site list
+# One WordPress site per line:   key|label|wordpress_path|database_name|table_prefix
+# key    : short id (letters/digits/_), used for ?site=<key>
+# label  : shown in the dashboard
+# wppath : absolute path to the WordPress root (contains wp-config.php)
+# db     : database name from wp-config.php
+# prefix : $table_prefix from wp-config.php (usually wp_)
+#
+# Example:
+example|example.com|/var/www/example.com/public_html|wp_example|wp_

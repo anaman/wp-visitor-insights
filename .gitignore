@@ -1,0 +1,12 @@
+# secrets / local state
+www/config.php
+config.php
+sites.list
+*.mmdb
+geoip/*.mmdb
+*.log
+
+# os / editor
+.DS_Store
+*.swp
+*~

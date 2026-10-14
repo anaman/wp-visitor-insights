@@ -1,0 +1,30 @@
+wp-visitor-insights
+Copyright (C) 2026 anaman and contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <https://www.gnu.org/licenses/>.
+
+---
+
+Bundled third-party components
+==============================
+
+lib/MaxMind/**  —  MaxMind DB Reader for PHP
+  Copyright (c) MaxMind, Inc.
+  Licensed under the Apache License, Version 2.0.
+  http://www.apache.org/licenses/LICENSE-2.0
+  Apache-2.0 is compatible with, and may be redistributed under, GPL-3.0.
+
+GeoLite2-Country.mmdb (downloaded at install time, not redistributed here)
+  GeoLite2 data created by MaxMind, available from https://www.maxmind.com.
+  Downloaded via the public mirror P3TERX/GeoLite.mmdb. Respect MaxMind's terms;
+  consider signing up for a free MaxMind licence key for a canonical feed.

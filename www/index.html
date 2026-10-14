@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Visitor Insights — self-hosted WordPress analytics</title>
+<style>
+  :root{
+    --paper:#f3efe4; --sand:#e4dcc8; --ink:#1d241f; --muted:#5d685f;
+    --panel:rgba(255,252,245,.86); --line:rgba(33,43,37,.14);
+    --sun:#d48b34; --leaf:#3d6b57; --steel:#4c5a74; --warn:#a4572a;
+    --shadow:0 18px 48px rgba(30,34,28,.12); --radius:22px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;color:var(--ink);font-family:"Avenir Next","Trebuchet MS",sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(212,139,52,.22), transparent 28%),
+      radial-gradient(circle at top right, rgba(61,107,87,.18), transparent 30%),
+      linear-gradient(180deg,#f7f3e9 0%,#ece5d6 100%);}
+  .shell{width:min(1240px,calc(100% - 28px));margin:26px auto 46px}
+  .hero,.card{backdrop-filter:blur(14px);background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow)}
+  .hero{padding:26px 30px;margin-bottom:20px}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--sun);font-weight:700}
+  h1{margin:6px 0 4px;font-size:clamp(24px,3.6vw,36px);letter-spacing:-.02em}
+  .sub{color:var(--muted);margin:0 0 14px;font-size:14px;line-height:1.5}
+  .controls{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin-top:6px}
+  .seg{display:inline-flex;background:rgba(30,36,31,.06);border-radius:999px;padding:4px;gap:2px}
+  .seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:600;
+    padding:7px 15px;border-radius:999px;cursor:pointer}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(30,34,28,.12)}
+  .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:-12px}
+  .right{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted)}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font:inherit;font-size:12.5px;
+    font-weight:600;color:var(--steel);cursor:pointer}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:18px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+  .kpi b{display:block;font-size:26px;letter-spacing:-.02em}
+  .kpi span{font-size:12px;color:var(--muted);letter-spacing:.04em}
+  .kpi .sub2{font-size:11px;color:var(--muted);margin-top:2px}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .card{padding:18px 20px}
+  .card h3{margin:0 0 12px;font-size:15px}
+  .card h3 small{color:var(--muted);font-weight:500;font-size:11.5px;margin-left:6px}
+  .span12{grid-column:span 12}.span6{grid-column:span 6}.span4{grid-column:span 4}.span8{grid-column:span 8}
+  @media(max-width:900px){.span6,.span4,.span8{grid-column:span 12}}
+  .bars{display:grid;gap:8px}
+  .row{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;font-size:13px}
+  .bar{height:9px;border-radius:6px;background:rgba(76,90,116,.14);overflow:hidden;margin-top:3px}
+  .bar > i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--leaf),#5b8b73)}
+  .row .n{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
+  .flag{font-size:15px;margin-right:6px}
+  .tl{width:100%;height:180px}
+  .tl rect{fill:var(--steel);opacity:.85}
+  .tl rect:hover{opacity:1}
+  .tl .axis{fill:var(--muted);font-size:10px}
+  table.recent{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.recent th{text-align:left;color:var(--muted);font-weight:600;font-size:10.5px;letter-spacing:.08em;
+    text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+  table.recent td{padding:6px 8px;border-bottom:1px solid rgba(33,43,37,.07);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+  table.recent tr:hover td{background:rgba(212,139,52,.07)}
+  .pill{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700;letter-spacing:.05em}
+  .pill.bot{background:rgba(164,87,42,.16);color:var(--warn)}
+  .pill.human{background:rgba(61,107,87,.14);color:var(--leaf)}
+  .scroll{max-height:360px;overflow:auto}
+  .muted{color:var(--muted)}
+  .err{background:#fbe9e2;border:1px solid #e8b6a3;color:#8a3b1e;padding:12px 16px;border-radius:12px;margin-bottom:14px;font-size:13px}
+  .note{margin-top:20px;text-align:center;color:var(--muted);font-size:12px}
+  .empty{color:var(--muted);font-size:13px;padding:8px 0}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="hero">
+    <div class="eyebrow">Self-hosted analytics · replaces Jetpack Stats</div>
+    <h1>Visitor Insights</h1>
+    <p class="sub">Where your visitors come from — geography, traffic source, pages and devices.
+      Collected first-party on your own server, with no external services.</p>
+    <div class="controls">
+      <span class="lbl">Site</span>
+      <div class="seg" id="siteSeg">
+        <button data-site="all" class="on">All sites</button>
+      </div>
+      <span class="lbl">Range</span>
+      <div class="seg" id="rangeSeg">
+        <button data-range="24h">24h</button>
+        <button data-range="7d" class="on">7 days</button>
+        <button data-range="30d">30 days</button>
+        <button data-range="90d">90 days</button>
+      </div>
+      <div class="right">
+        <span id="stamp">loading…</span>
+        <button class="btn" id="refresh">Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="err"></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid">
+    <div class="card span12">
+      <h3>Traffic over time <small id="tlNote"></small></h3>
+      <div id="timeline"><div class="empty">No data yet.</div></div>
+    </div>
+
+    <div class="card span6">
+      <h3>🌍 Where visitors are <small>top countries</small></h3>
+      <div class="bars" id="countries"><div class="empty">No data yet.</div></div>
+    </div>
+
+    <div class="card span6">
+      <h3>↗ Where visitors come from <small>referring sites</small></h3>
+      <div class="bars" id="referrers"><div class="empty">No data yet.</div></div>
+    </div>
+
+    <div class="card span8">
+      <h3>Top pages</h3>
+      <div class="bars" id="pages"><div class="empty">No data yet.</div></div>
+    </div>
+
+    <div class="card span4">
+      <h3>Devices</h3>
+      <div class="bars" id="devices"><div class="empty">No data yet.</div></div>
+      <h3 style="margin-top:18px">Browsers</h3>
+      <div class="bars" id="browsers"><div class="empty">No data yet.</div></div>
+    </div>
+
+    <div class="card span12">
+      <h3>Recent visits <small>last 60 hits</small></h3>
+      <div class="scroll">
+        <table class="recent" id="recent">
+          <thead><tr><th>Time</th><th>Site</th><th>Country</th><th>Source</th><th>Page</th><th>Device</th><th>Type</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Collected by the <code>visitor-insights</code> mu-plugin · geo: local GeoLite2 data · served on this host</p>
+</div>
+
+<script>
+"use strict";
+var state = { site: "all", range: "7d" };
+var siteLabels = {};
+var timer = null;
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function num(n){ return (n||0).toLocaleString(); }
+
+function flag(cc){
+  if(!cc || cc.length!==2 || !/^[A-Za-z]{2}$/.test(cc)) return "🏳️";
+  return String.fromCodePoint(0x1F1E6 + cc.toUpperCase().charCodeAt(0)-65,
+                             0x1F1E6 + cc.toUpperCase().charCodeAt(1)-65);
+}
+function bars(el, items, labelFn, valueFn, extraFn){
+  el = document.getElementById(el);
+  if(!items || !items.length){ el.innerHTML = '<div class="empty">No data yet.</div>'; return; }
+  var max = Math.max.apply(null, items.map(valueFn)) || 1;
+  el.innerHTML = items.map(function(it){
+    var v = valueFn(it), w = Math.max(2, Math.round(v/max*100));
+    return '<div class="row"><div><div>'+labelFn(it)+(extraFn?extraFn(it):"")+'</div>'+
+      '<div class="bar"><i style="width:'+w+'%"></i></div></div>'+
+      '<div class="n">'+num(v)+'</div></div>';
+  }).join("");
+}
+function fmtTime(s){
+  // s is local MySQL "YYYY-MM-DD HH:MM:SS"
+  if(!s) return "";
+  var d = new Date(s.replace(" ", "T"));
+  if(isNaN(d)) return s;
+  var diff = Math.round((Date.now() - d.getTime())/1000);
+  if(diff < 60) return diff+"s ago";
+  if(diff < 3600) return Math.round(diff/60)+"m ago";
+  if(diff < 86400) return Math.round(diff/3600)+"h ago";
+  return d.toLocaleDateString();
+}
+
+function renderTimeline(tl, range){
+  var el = document.getElementById("timeline");
+  document.getElementById("tlNote").textContent = (range==="24h" ? "hourly" : "daily");
+  if(!tl || !tl.length){ el.innerHTML = '<div class="empty">No data yet.</div>'; return; }
+  var w = 1000, h = 170, padL = 34, padB = 22, padT = 8;
+  var max = Math.max.apply(null, tl.map(function(x){return x.pv;})) || 1;
+  var bw = (w-padL) / tl.length;
+  var rects = "", labels = "";
+  tl.forEach(function(x,i){
+    var bh = (x.pv/max)*(h-padB-padT);
+    var x0 = padL + i*bw + bw*0.12, bwid = Math.max(1.5, bw*0.76);
+    var y0 = h-padB-bh;
+    rects += '<rect x="'+x0.toFixed(1)+'" y="'+y0.toFixed(1)+'" width="'+bwid.toFixed(1)+'" height="'+Math.max(0,bh).toFixed(1)+'"><title>'+esc(x.t)+': '+num(x.pv)+' views, '+num(x.uv)+' visitors</title></rect>';
+    var step = Math.ceil(tl.length/8);
+    if(i % step === 0){
+      var lab = (range==="24h") ? x.t.slice(11,13)+":00" : x.t.slice(5);
+      labels += '<text class="axis" x="'+x0.toFixed(1)+'" y="'+(h-6)+'">'+esc(lab)+'</text>';
+    }
+  });
+  labels += '<text class="axis" x="4" y="'+(padT+10)+'">'+num(max)+'</text>';
+  el.innerHTML = '<svg class="tl" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'+
+    '<line x1="'+padL+'" y1="'+(h-padB)+'" x2="'+w+'" y2="'+(h-padB)+'" stroke="rgba(33,43,37,.18)"/>'+
+    rects + labels + '</svg>';
+}
+
+function buildSites(available){
+  if(!available) return;
+  siteLabels = available;
+  var keys = Object.keys(available);
+  if(keys.length < 2) return; // a single site needs no switcher
+  var seg = document.getElementById("siteSeg");
+  if(seg.getAttribute("data-built") === String(keys.length)) return;
+  var html = '<button data-site="all" class="'+(state.site==="all"?"on":"")+'">All sites</button>';
+  keys.forEach(function(k){
+    html += '<button data-site="'+esc(k)+'" class="'+(state.site===k?"on":"")+'">'+esc(available[k])+'</button>';
+  });
+  seg.innerHTML = html;
+  seg.setAttribute("data-built", String(keys.length));
+}
+
+function render(d){
+  buildSites(d.available);
+  var t = d.totals || {};
+  var botPct = t.pageviews ? Math.round(t.bots/t.pageviews*100) : 0;
+  document.getElementById("kpis").innerHTML = [
+    ["Pageviews", num(t.pageviews)],
+    ["Unique visitors", num(t.visitors)],
+    ["Sessions", num(t.sessions)],
+    ["Countries", num(t.countries)],
+    ["Bots", num(t.bots), botPct+"% of traffic"],
+  ].map(function(k){
+    return '<div class="kpi"><b>'+k[1]+'</b><span>'+k[0]+'</span>'+(k[2]?'<div class="sub2">'+k[2]+'</div>':'')+'</div>';
+  }).join("");
+
+  renderTimeline(d.timeline, d.range);
+
+  bars("countries", d.countries, function(it){
+    return '<span class="flag">'+flag(it.code)+'</span>'+esc(it.name || it.code || "Unknown");
+  }, function(it){ return it.pv; }, function(it){
+    return it.uv ? ' <span class="n">· '+num(it.uv)+' uv</span>' : "";
+  });
+
+  bars("referrers", d.referrers, function(it){
+    return esc(it.host);
+  }, function(it){ return it.pv; });
+
+  bars("pages", d.pages, function(it){
+    var title = it.title ? esc(it.title) : esc(it.path);
+    return '<b>'+title+'</b> <span class="n">'+esc(it.path)+'</span>';
+  }, function(it){ return it.pv; });
+
+  bars("devices", d.devices, function(it){ return esc(it.label); }, function(it){ return it.pv; });
+  bars("browsers", d.browsers, function(it){ return esc(it.label); }, function(it){ return it.pv; });
+
+  var tb = document.querySelector("#recent tbody");
+  if(!d.recent || !d.recent.length){
+    tb.innerHTML = '<tr><td colspan="7" class="muted">No visits recorded yet.</td></tr>';
+  } else {
+    tb.innerHTML = d.recent.map(function(r){
+      var site = esc(siteLabels[r.site] || r.site);
+      return '<tr>'+
+        '<td>'+esc(fmtTime(r.ts))+'</td>'+
+        '<td>'+site+'</td>'+
+        '<td>'+flag(r.cc)+' '+esc(r.country || "—")+'</td>'+
+        '<td>'+esc(r.ref || "(direct)")+'</td>'+
+        '<td title="'+esc(r.path)+'">'+esc(r.title || r.path)+'</td>'+
+        '<td>'+esc((r.device||"")+(r.browser?" · "+r.browser:""))+'</td>'+
+        '<td><span class="pill '+(r.bot?"bot":"human")+'">'+(r.bot?"bot":"human")+'</span></td>'+
+      '</tr>';
+    }).join("");
+  }
+}
+
+function load(){
+  var err = document.getElementById("err");
+  document.getElementById("stamp").textContent = "loading…";
+  var apiBase = window.VI_API || "api.php";
+  var url = apiBase + "?site=" + encodeURIComponent(state.site) + "&range=" + encodeURIComponent(state.range) + "&_=" + Date.now();
+  fetch(url, {cache:"no-store"}).then(function(r){ return r.json(); }).then(function(d){
+    if(d.error){ err.innerHTML = '<div class="err">API error: '+esc(d.error)+(d.detail?' — '+esc(d.detail):'')+'</div>'; }
+    else { err.innerHTML = ""; }
+    render(d);
+    document.getElementById("stamp").textContent = "updated " + new Date().toLocaleTimeString();
+  }).catch(function(e){
+    err.innerHTML = '<div class="err">Could not load data: '+esc(e.message)+'</div>';
+    document.getElementById("stamp").textContent = "error";
+  });
+}
+
+function seg(id, key){
+  document.getElementById(id).addEventListener("click", function(ev){
+    var b = ev.target.closest("button"); if(!b) return;
+    Array.prototype.forEach.call(this.querySelectorAll("button"), function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    state[key] = b.getAttribute("data-site") || b.getAttribute("data-range");
+    load();
+  });
+}
+seg("siteSeg","site"); seg("rangeSeg","range");
+document.getElementById("refresh").addEventListener("click", load);
+setInterval(load, 60000);
+load();
+</script>
+</body>
+</html>
